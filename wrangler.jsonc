@@ -1,0 +1,11 @@
+// Cloudflare Workers: liefert den Ordner dist/ als statische Website aus.
+// Gebaut wird vorher mit „node bauen.mjs“ (Build-Befehl in Cloudflare).
+{
+  "name": "martinroehr-fotos",
+  "compatibility_date": "2025-10-01",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "auto-trailing-slash",   // /about liefert about.html, /de/ liefert de/index.html
+    "not_found_handling": "404-page"          // unbekannte Adressen zeigen 404.html
+  }
+}

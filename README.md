@@ -24,19 +24,18 @@ Statische Website (Englisch + Deutsch), ohne Framework.
 
    Erzeugt alle Seiten, `sitemap.xml`, `robots.txt`, `_redirects` und den Ordner `dist/`.
 
-4. **Veröffentlichen**: committen und pushen – Cloudflare Pages baut und veröffentlicht automatisch.
+4. **Veröffentlichen**: committen und pushen – Cloudflare baut und veröffentlicht automatisch.
 
    ```bash
    git add -A && git commit -m "Neue Fotos" && git push
    ```
 
-## Cloudflare Pages (einmalig)
+## Cloudflare (einmalig)
 
-Pages-Projekt mit dem GitHub-Repo verbinden, dann:
+Als Worker mit dem GitHub-Repo verbunden (`wrangler.jsonc` liefert `dist/` aus):
 
-- Framework preset: **None**
-- Build command: **`node bauen.mjs`**
-- Build output directory: **`dist`**
+- Build-Befehl: **`node bauen.mjs`**
+- Bereitstellungsbefehl: **`npx wrangler deploy`**
 
 Die Fotos werden lokal verkleinert (das Skript braucht macOS); ins Repo kommen nur `bilder/_klein`,
 `bilder/_gross` und `bilder.js`. Die Originalfotos und `umbenennung-alt-neu.json` bleiben lokal (siehe `.gitignore`).
