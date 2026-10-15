@@ -18,11 +18,21 @@
   const markieren = () => buehne.querySelectorAll('figure').forEach((f) => f.classList.toggle('aktiv', f.dataset.q === aktuell));
   let schliessTimer;
   let aktuell = null;
-  const zeigeVoll = (src) => {
+  // Zeigt sofort das schon geladene Vorschaubild und tauscht es gegen die Großansicht,
+  // sobald diese fertig geladen ist – so reagiert der Hover ohne Wartezeit.
+  const zeigeVoll = (src, vorschau) => {
     clearTimeout(schliessTimer);
     aktuell = src;
     markieren();
-    vollBild.src = src;
+    if (vollBild.dataset.ziel !== src) {
+      vollBild.dataset.ziel = src;
+      vollBild.src = vorschau || src;
+      if (vorschau) {
+        const gross = new Image();
+        gross.src = src;
+        gross.decode().then(() => { if (vollBild.dataset.ziel === src) vollBild.src = src; }).catch(() => {});
+      }
+    }
     voll.classList.add('offen');
     document.body.classList.add('vollbild');
   };
@@ -129,13 +139,13 @@
       img.loading = 'lazy';
       fig.appendChild(img);
       // Maus: Drüberfahren öffnet, Wegfahren schließt
-      fig.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') zeigeVoll(quelle); });
+      fig.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') zeigeVoll(quelle, b.src); });
       fig.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') schliesseVoll(); });
       // Touch: Antippen öffnet, nochmal Antippen (oder daneben) schließt, anderes Bild tippen wechselt
       fig.addEventListener('click', (e) => {
         if (e.pointerType === 'mouse') return;
         e.stopPropagation();
-        if (aktuell === quelle) schliesseVoll(true); else zeigeVoll(quelle);
+        if (aktuell === quelle) schliesseVoll(true); else zeigeVoll(quelle, b.src);
       });
       el.appendChild(fig);
     });

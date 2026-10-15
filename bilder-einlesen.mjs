@@ -28,9 +28,13 @@ function masse(datei) {
   return { w, h };
 }
 
-function verkleinern(von, nach, kante) {
+// Größen: Vorschau fürs Raster und Großansicht (bewusst nicht riesig, damit sie beim Hover schnell da ist)
+const KLEIN = { kante: 500, qualitaet: 80 };
+const GROSS = { kante: 1600, qualitaet: 70 };
+
+function verkleinern(von, nach, { kante, qualitaet }) {
   if (fs.existsSync(nach) && fs.statSync(nach).mtimeMs >= fs.statSync(von).mtimeMs) return;
-  execFileSync('sips', ['-Z', String(kante), '-s', 'format', 'jpeg', '-s', 'formatOptions', '80', von, '--out', nach], { stdio: 'ignore' });
+  execFileSync('sips', ['-Z', String(kante), '-s', 'format', 'jpeg', '-s', 'formatOptions', String(qualitaet), von, '--out', nach], { stdio: 'ignore' });
 }
 
 // Alt-Texte (für Suchmaschinen und Screenreader) aus dem Dateinamen ableiten
@@ -53,8 +57,8 @@ function einlesen() {
     let name = f.replace(/\.[^.]+$/, '') + '.jpg';
     while (vergeben.has(name)) name = name.replace(/\.jpg$/, '_2.jpg'); // gleicher Name mit anderer Endung
     vergeben.add(name);
-    verkleinern(original, path.join(klein, name), 500);
-    verkleinern(original, path.join(gross, name), 2400);
+    verkleinern(original, path.join(klein, name), KLEIN);
+    verkleinern(original, path.join(gross, name), GROSS);
     const { w, h } = masse(original);
     return { src: '/' + enc(`bilder/_klein/${name}`), voll: '/' + enc(`bilder/_gross/${name}`), w, h, ...altTexte(name) };
   });
