@@ -1,0 +1,18 @@
+# Originalfotos bleiben lokal (groß, teils mit Model-Namen im Namen).
+# Ins Repo kommen nur die verkleinerten Versionen aus bilder-einlesen.mjs.
+/bilder/*
+!/bilder/_klein/
+!/bilder/_gross/
+umbenennung-alt-neu.json
+
+# Wird von bauen.mjs erzeugt – lokal und beim Bauen auf Cloudflare
+/dist/
+/*.html
+/de/
+/sitemap.xml
+/robots.txt
+/_redirects
+/_headers
+
+.DS_Store
+node_modules/

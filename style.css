@@ -1,0 +1,205 @@
+/* ---------- Schrift ---------- */
+@font-face { font-family: "Instrument Sans"; font-weight: 400 700; font-display: swap;
+  src: url("fonts/instrument-sans-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: "Instrument Sans"; font-weight: 400 700; font-display: swap;
+  src: url("fonts/instrument-sans-latin-ext-wght-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+
+/* ---------- Farben und Grundwerte ---------- */
+:root {
+  --bg: #fff;
+  --text: #111;
+  --dezent: #555;
+  --platz: #eee;                       /* Fläche, solange ein Bild lädt */
+  --rand: clamp(16px, 3vw, 40px);
+  --kopfschrift: clamp(15px, 1.4vw, 21px);
+  --start: clamp(110px, 18vh, 200px);  /* Abstand oben, an dem die Inhalte beginnen */
+  --fuss: 64px;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #030206;
+  --text: #f2f0ec;
+  --dezent: #8b8982;
+  --platz: #14131a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+html { scrollbar-gutter: stable; } /* Seitenbreite bleibt gleich, ob mit oder ohne Scrollbalken */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px; line-height: 1.4;
+  text-transform: lowercase;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+
+/* Nur für Screenreader und Suchmaschinen sichtbar */
+.nur-lesen { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* ---------- Kopfleiste ---------- */
+.kopf {
+  position: fixed; inset: 0 0 auto 0; z-index: 10;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 22px var(--rand);
+  color: #fff; mix-blend-mode: difference; /* wie bei Locomotive: bleibt auf Weiß und auf Bildern lesbar */
+  pointer-events: none;
+}
+/* Seiten mit Fließtext: ruhige Fläche, damit beim Scrollen nichts durchscheint */
+body:not(.galerie) .kopf { background: var(--bg); color: var(--text); mix-blend-mode: normal; }
+.kopf a, .kopf button { pointer-events: auto; white-space: nowrap; transition: opacity .2s; }
+.kopf a:hover, .kopf button:hover { opacity: .5; }
+.logo, .kopf nav, .sprache, .modus { font-size: var(--kopfschrift); }
+.kopf nav { position: absolute; left: 50%; transform: translateX(-50%); display: flex; gap: 1.2em; }
+.kopf nav a[aria-current] { text-decoration: underline; text-underline-offset: 3px; }
+.kopf .rechts { display: flex; gap: 1.2em; align-items: baseline; }
+.modus { font: inherit; font-size: var(--kopfschrift); color: inherit; background: none; border: 0; cursor: pointer; text-transform: lowercase; }
+
+/* ---------- Fußzeile ---------- */
+.fuss {
+  display: flex; justify-content: space-between; align-items: center; gap: 1.5em; flex-wrap: wrap;
+  padding: 20px var(--rand); font-size: 14px; color: var(--dezent);
+}
+.fuss nav { display: flex; gap: 1.4em; flex-wrap: wrap; }
+.fuss a:hover { color: var(--text); }
+/* Galerie: liegt fest unten über den Bildern und kehrt sich wie die Kopfleiste um */
+.galerie .fuss {
+  position: fixed; inset: auto 0 0 0; z-index: 10; padding-block: 16px;
+  color: #fff; mix-blend-mode: difference; pointer-events: none;
+}
+.galerie .fuss a { pointer-events: auto; }
+.galerie .fuss a:hover { color: #fff; opacity: .5; }
+
+/* ---------- Galerie (Startseite) ---------- */
+.galerie { overflow: hidden; }
+.buehne {
+  position: relative; z-index: 9; /* über der Großansicht: die Bilder laufen darüber weiter */
+  height: 100vh;
+  overflow: hidden;
+  touch-action: none; /* eigene Wisch-Steuerung, kein Zoomen/Scrollen des Browsers */
+}
+.spur { position: relative; will-change: transform; } /* Bewegung steuert galerie.js */
+.abschnitt { position: absolute; left: 0; right: 0; }
+figure { position: absolute; }
+figure img {
+  display: block; width: 100%; height: 100%;
+  object-fit: cover;
+  background: var(--platz);
+  transition: opacity .15s;
+}
+/* Großansicht: liegt unter den Vorschaubildern, Format bleibt erhalten */
+.voll {
+  position: fixed; inset: 0; z-index: 8;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg);
+  opacity: 0; pointer-events: none;
+  transition: opacity .12s ease-out;
+}
+.voll.offen { opacity: 1; }
+.voll img { width: 100%; height: 100%; object-fit: contain; }
+/* Bei offenem Bild: Vorschaubilder gedämpft, das gezeigte voll sichtbar */
+body.vollbild figure img { opacity: .25; }
+body.vollbild figure.aktiv img { opacity: 1; }
+@media (hover: hover) { body.vollbild figure:hover img { opacity: 1; } }
+
+/* ---------- About ---------- */
+.ueber, .kontakt {
+  min-height: calc(100vh - var(--fuss));
+  display: flex; flex-direction: column;
+  padding: var(--start) var(--rand) var(--rand);
+}
+.ueber { justify-content: space-between; gap: 8vh; }
+.ueber .vorn { display: grid; grid-template-columns: minmax(180px, 22vw) 1fr; gap: var(--rand); align-items: start; }
+.ueber .portrait { width: 100%; height: auto; display: block; }
+.ueber .lead { font-size: clamp(17px, 1.5vw, 24px); line-height: 1.3; letter-spacing: -.01em; max-width: 34em; }
+.ueber .lead em { font-style: normal; color: var(--dezent); }
+.ueber h2 { font-size: inherit; font-weight: 400; color: var(--dezent); margin-bottom: .5em; }
+.referenzen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--rand); }
+.referenzen h2 { margin-bottom: .8em; }
+.referenzen ul { list-style: none; font-size: clamp(20px, 2.2vw, 36px); line-height: 1.15; letter-spacing: -.015em; }
+
+/* Drei Spalten unten (About und Contact) */
+.infos {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--rand);
+  font-size: clamp(16px, 1.3vw, 20px); line-height: 1.35;
+}
+.infos h2 { font-size: inherit; font-weight: 400; color: var(--dezent); margin-bottom: .5em; }
+.infos a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.infos a:hover { opacity: .5; }
+
+/* ---------- Contact ---------- */
+.kontakt { gap: 1.2em; font-size: clamp(16px, 1.3vw, 20px); }
+.kontakt p { color: var(--dezent); }
+.kontakt .mail {
+  align-self: flex-start; display: inline-block;
+  font-size: clamp(28px, 4vw, 64px); line-height: 1.1; letter-spacing: -.025em;
+  overflow-wrap: anywhere;
+}
+/* Linie wächst beim Hover von links über die ganze Adresse */
+.kontakt .mail .adr {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 .04em no-repeat;
+  padding-bottom: .06em; transition: background-size .35s cubic-bezier(.2, .7, .2, 1);
+}
+.kontakt .mail span[aria-hidden] { font-size: .6em; letter-spacing: 0; display: inline-block; transition: transform .25s; }
+.kontakt .mail:hover .adr { background-size: 100% .04em; }
+.kontakt .mail:hover span[aria-hidden] { transform: translate(.1em, -.1em); }
+.kontakt .infos { margin-top: auto; padding-top: 8vh; width: 100%; }
+
+/* Ladeanimation: kleine Foto-Blitze in der Mitte, dann öffnet sich die Seite */
+.intro {
+  position: fixed; inset: 0; z-index: 100; background: var(--bg);
+  display: grid; place-items: center;
+  transition: opacity .3s ease-out;
+}
+.intro.weg { opacity: 0; pointer-events: none; }
+.intro-bild { --kante: clamp(80px, 8vw, 130px); display: grid; place-items: center; width: var(--kante); height: var(--kante); }
+.intro img { max-width: var(--kante); max-height: var(--kante); width: auto; height: auto; display: block; opacity: 0; }
+
+/* ---------- Rechtliche Seiten: Fließtext in normaler Schreibweise ---------- */
+.recht {
+  text-transform: none;
+  padding: var(--start) var(--rand) 10vh;
+  font-size: 16px; line-height: 1.6;
+}
+.recht > * { max-width: 64ch; }
+.recht h1 {
+  max-width: none; margin-bottom: 1.4em;
+  font-size: clamp(28px, 4vw, 64px); font-weight: 400; line-height: 1.05; letter-spacing: -.03em;
+  text-transform: lowercase;
+}
+.recht h2 { margin: 3.2em 0 1em; font-size: 15px; font-weight: 400; color: var(--dezent); text-transform: lowercase; }
+.recht h3 { margin: 1.8em 0 .4em; font-size: 16px; font-weight: 600; }
+.recht p, .recht ul { margin-bottom: 1em; }
+.recht ul { padding-left: 1.2em; }
+.recht a { text-decoration: underline; text-underline-offset: 3px; }
+.recht a:hover { opacity: .5; }
+.recht .hinweis { color: var(--dezent); font-size: 14px; }
+
+/* ---------- Sanftes Einblenden (nur, wenn JavaScript läuft) ---------- */
+.js .rein {
+  opacity: 0; transform: translateY(18px);
+  transition: opacity .8s ease, transform .9s cubic-bezier(.2, .7, .2, 1);
+  transition-delay: var(--d, 0s);
+}
+.js .rein.sichtbar { opacity: 1; transform: none; }
+
+/* ---------- Bildschirmgrößen und Barrierefreiheit ---------- */
+@media (max-width: 800px) {
+  .infos, .referenzen, .ueber .vorn { grid-template-columns: 1fr; }
+  .ueber .portrait { max-width: 70%; }
+}
+/* Schmal: Navigation rechts statt mittig, Kopfleiste bleibt einzeilig */
+@media (max-width: 600px) {
+  .logo, .kopf nav, .sprache, .modus { font-size: 14px; }
+  .kopf nav { position: static; transform: none; gap: .7em; margin-left: auto; margin-right: .8em; }
+  .kopf .rechts { gap: .7em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro { display: none; }
+  .js .rein { opacity: 1; transform: none; transition: none; }
+}
