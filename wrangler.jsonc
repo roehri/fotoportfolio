@@ -1,8 +1,9 @@
 // Cloudflare Workers: liefert den Ordner dist/ als statische Website aus.
-// Gebaut wird vorher mit „node bauen.mjs“ (Build-Befehl in Cloudflare).
+// Vor jedem Hochladen baut Wrangler die Seiten selbst mit „node bauen.mjs“ (unabhängig vom Dashboard).
 {
   "name": "martinroehr-fotos",
   "compatibility_date": "2025-10-01",
+  "build": { "command": "node bauen.mjs" },
   "assets": {
     "directory": "./dist",
     "html_handling": "auto-trailing-slash",   // /about liefert about.html, /de/ liefert de/index.html
